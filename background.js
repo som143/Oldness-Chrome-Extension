@@ -1,8 +1,7 @@
-var selectedId = -1
-var tabOldnessMap = {}
+var tabOldnessMap = {} // { integer tabId -> string oldness}
 
-function refreshBadge() {
-  chrome.tabs.get(selectedId, function (tab){
+function refreshBadge(tabId) {
+  chrome.tabs.get(tabId, function (tab){
     waybackAPIRequestURL = "http://archive.org/wayback/available?timestamp=19010101&url=" + tab.url
     timeout = 1000 // milliseconds
     $.ajax({
@@ -17,40 +16,39 @@ function refreshBadge() {
         meta = data.archived_snapshots.closest
         if (meta.available) {
           oldness = moment(meta.timestamp, "YYYYMMDDhhmmss").fromNow()
-          tabOldnessMap[tab.url] = oldness
+          tabOldnessMap[tab.id] = oldness
           chrome.browserAction.setBadgeText({
             text: oldness,
-            tabId: selectedId})
+            tabId: tabId})
         }
       }
     })
   })
 }
 
-chrome.tabs.onUpdated.addListener(function(tabId, props) {
-  if (props.status == "complete" && tabId == selectedId)
-    refreshBadge()
+// event listeners
+
+chrome.tabs.onRemoved.addListener(function(tabId, props) {
+  delete tabOldnessMap[tabId]
 })
 
 chrome.tabs.onSelectionChanged.addListener(function(tabId, props) {
-  selectedId = tabId
-  refreshBadge()
-})
-
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-  selectedId = tabs[0].id
-  refreshBadge()
+  refreshBadge(tabId)
 })
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    if (!sender.tab && tabOldnessMap[request.url]) {
-      waybackURL = "http://wayback.archive.org/web/*/" + request.url
-      oldness = tabOldnessMap[request.url]
+    if (!sender.tab && tabOldnessMap[request.tabId]) {
+      oldness = tabOldnessMap[request.tabId]
       sendResponse({
-        waybackURL: waybackURL,
         oldness: oldness
       })
     }
   }
 )
+
+// setup
+
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+  refreshBadge(tabs[0].id)
+})
