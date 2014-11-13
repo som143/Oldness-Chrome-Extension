@@ -3,14 +3,16 @@
   "description": "A Google Chrome extension to inform you how old is the page.",
   "version": "0.0",
   "browser_action": {
-    "default_title": "Obsolete"
+    "default_title": "Obsolete",
+    "default_popup": "popup.html"
   },
   "background": {
     "scripts": [
       "zepto.min.js",
       "moment.js",
       "background.js"
-    ]
+    ],
+    "persistent": false
   },
   "permissions": [
     "tabs",
