@@ -14,7 +14,7 @@ function refreshBadge() {
         meta = data.archived_snapshots.closest
         //console.log(meta)
         if (meta.available) {
-          badgeText = meta.timestamp.substring(4, 8)
+          badgeText = moment(meta.timestamp, "YYYYMMDDhhmmss").fromNow()
           chrome.browserAction.setBadgeText({
             text: badgeText,
             tabId: selectedId})

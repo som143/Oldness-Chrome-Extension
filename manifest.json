@@ -6,7 +6,11 @@
     "default_title": "Obsolete"
   },
   "background": {
-    "scripts": ["zepto.min.js", "background.js"]
+    "scripts": [
+      "zepto.min.js",
+      "moment.js",
+      "background.js"
+    ]
   },
   "permissions": [
     "tabs",
